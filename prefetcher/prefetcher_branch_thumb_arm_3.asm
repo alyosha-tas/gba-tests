@@ -51,7 +51,7 @@ t001:
         ldr     r0, [r4]
         str     r0, [r3]
         adr     r4, test_2
-        sub     r4, 1
+        add     r4, 1
 
         mov     r2, 0
         adr     r2, branch_1 + 1
@@ -74,16 +74,21 @@ align 4
         mov     r7, 0xFF
         ldr     r0, [r3]
         and     r0, r7
-        cmp     r0, 0x6C
-        bne     f001a
+        cmp     r0, 0x4C
+        bne     fail_go
         bx      r4
         dw      0x00000000
+
+fail_go:
+        adr     r7, f001a + 1
+        bx      r7
+
 code16
 test_2:
         mov     r0, r0
         ldr     r0, [r3]
         and     r0, r7
-        cmp     r0, 0x4C
+        cmp     r0, 0x6A
         bne     f001b
 
         bx      r5
