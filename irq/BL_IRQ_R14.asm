@@ -32,12 +32,6 @@ main:
         adr     r4, irq_rt
         str     r4, [r0]
 
-        ; enable timer 0 IRQ
-        mov     r0, 8
-        str     r0, [r3, REG_IE]
-        mov     r0, 1
-        str     r0, [r3, REG_IME]
-
         ; set waitstate
         mov     r4, r6
         adr     r4, .wait_data
@@ -60,7 +54,7 @@ align 4
         dw      0x00004014
 
 .cnt_tmr:
-        dw      0x00C0FFA0
+        dw      0x00C0FFE0
 
 .irq_hand:
         dw      0x03007FFC
@@ -69,66 +63,77 @@ irq_rt:
         mov     r0, 0
         mov     r3, MEM_IO
         str     r0, [r3, REG_IME]
-        add     r3, REG_TIM0CNT
-        ldr     r8, [r3]
-        and     r8, 0xFF
-        str     r0, [r3]
-        mov     r6, r14
-        dw      0xE8BD500F
-        ;ldm     r13,{r0, r1, r2, r3, r12, r14}
-        mov     r5, r14
-        dw      0xE92D500F
-        ;stm     r13,{r0, r1, r2, r3, r12, r14}
-        mov     r14, r6
-        mov     r3, MEM_IO
-        add     r3, REG_TIM0CNT
+        mov     r0, 0x1F
+        msr     cpsr, r0
+        mov     r7, 0xFF
+        lsr     r14, 16
+        and     r14, r7
+        mov     r0, 0x1
+        cmp     r14, r0
+        bne     fail
+        bl      eval
 
-        mov     r15, r14
+fail:
+        mov     r12, 1
+        bl      eval
 
 
 code16
 align 2
 
 t001:
-        ; tests what value of pc is written to the stack
+        ; tests what is in R14 when a BL is interupted
+        mov     r7, 0x8
+        mov     r0, 0x08
+        strh    r0, [r5]
+        mov     r0, 1
+        mov     r2, 9
+        lsl     r0, r2
+        mov     r3, 1
+        mov     r2, 26
+        lsl     r3, r2
+        add     r3, r0
+        mov     r0, 8
+        str     r0, [r3]
+        add     r3, r0
+        mov     r0, 1
+        str     r0, [r3]
+        mov     r0, 1
+        mov     r2, 8
+        lsl     r0, r2
+        mov     r3, 1
+        mov     r2, 26
+        lsl     r3, r2
+        add     r3, r0
+
+        mov     r6, r5
+        sub     r6, 2
+        mov     r2, 8
+        mov     r0, 0
+        mov     r8, r0
+        str     r0, [r3]
+        strh    r7, [r5]
+        str     r2, [r6]
+        mov     r2, 0
         ldr     r0, [r4]
         str     r0, [r3]
-        swi     2
+        ldr     r0, [r4]
+        mov     r0, r0
+        mov     r0, r0
+        mov     r0, r0
+        ldr     r0, [r1]
+        ldr     r0, [r1]
+        mov     r0, r0
+        mov     r0, r0
+        mov     r0, r0
+        ; BL
+        dw      0xF803F010
 
-        mov     r7, 0xFF
 
-        mov     r6, r8
-
-        cmp     r6, 0xD7
-
-        bne     f001a
-
-        and     r5, r7
-        cmp     r5, 0x74
-
-        bne     f001b
-
-        mov     r2, 0
-        b       test_end
-
-f001a:
-        mov     r2, 1
-        bl      test_end
-
-f001b:
-        mov     r2, 2
-        bl      test_end
-
-test_end:
-        mov     r0, 0
-        str     r0, [r3]
-        adr     r0, eval
-        bx      r0
 
 code32
 align 4
 eval:
-        mov     r12, r2
         m_vsync
         m_test_eval r12
 
