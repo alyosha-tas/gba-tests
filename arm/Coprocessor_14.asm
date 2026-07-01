@@ -32,7 +32,7 @@ main:
 
         add     r3, REG_TIM0CNT
 
-        mov     r1, MEM_EWRAM
+        mov     r5, MEM_EWRAM
 
         mov     r4, r6
         adr     r4, .cnt_tmr
@@ -62,29 +62,40 @@ align 4
         dw      0x03007FFC
 
 .bus_read:
-        dw      0x1A00000B
+        dw      0xE20330FF
 
 .bus_read_2:
-        dw      0x1A00000A
+        dw      0x1A000008
 
 t001:
         ; test coprocessor instructions on cp14
         ; all others besides MRC / MCR are undef
         ; MCR / MRC only work with cp14
         ; but the debugger is disabled so they have no effect
+
+        ; add an instruction to prefetcher
+        ldr     r0, [r5]
+        ldr     r0, [r5]
+        ldr     r0, [r5]
+        ldr     r0, [r5]
+        ldr     r0, [r5]
+        ldr     r0, [r5]
+
         MRC     p14, 0, r0, c0, c0, 0
-        cmp     r0, r1
+
+        ; check timing
+        ldr     r3, [r3]
+        and     r3, 0xFF
+        cmp     r3, 0x75
         bne     f001a
+
+        cmp     r0, r1
+        bne     f001b
 
         MRC     p14, 0, r0, c1, c0, 0
         cmp     r0, r2
-        bne     f001b
-
-        ; check timing
-        ldr     r0, [r3]
-        and     r0, 0xFF
-        cmp     r0, 0x5A
         bne     f001c
+
 
         ; destination r15 updates flags (in this case check N flag
         MRC     p14, 0, r15, c1, c0, 0
@@ -98,7 +109,7 @@ t001:
         b       test_end
 
 f001a:
-        mov     r12, 1
+        mov     r12, r3
         bl      test_end
 
 f001b:
@@ -106,7 +117,7 @@ f001b:
         bl      test_end
 
 f001c:
-        mov     r12, r0
+        mov     r12, 3
         bl      test_end
 
 f001d:
