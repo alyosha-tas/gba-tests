@@ -2,6 +2,8 @@
 
 prefetcher_branch_thumb_arm_2 crashes on console due to the prefetcher being misaligned when switching from thumb to arm mode. I do not know what the implications of this are for potential damage to hardware.
 
+fifo_dma_disable_jam and fifo_dma_disable_jam_2 also crash on console due to FIFO DMA being triggered but then disabled before it starts.
+
 # Warning (Original warning from jsmolka)
 I don't feel comfortable putting these tests into the test suite. The failures on hardware are probably caused by the flash card.
 
